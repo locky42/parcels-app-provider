@@ -3,6 +3,9 @@
     "description": "ParcelsApp PHP Provider",
     "keywords": ["extension"],
     "license": "GPL-3.0",
+    "require": {
+        "php": ">=8.0"
+    },
     "authors": [
         {
             "name": "Maksym Zinchenko",
