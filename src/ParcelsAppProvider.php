@@ -2,6 +2,8 @@
 
 namespace locky42\ParcelsAppProvider;
 
+use locky42\ParcelsAppProvider\exceptions\ParcelsAppProviderError;
+
 class ParcelsAppProvider
 {
     const URL_SHIPMENTS_TRACKING = 'shipments/tracking';
@@ -54,7 +56,9 @@ class ParcelsAppProvider
     /**
      * @param $trackingId
      * @param $country
+     * @param $language
      * @return mixed
+     * @throws ParcelsAppProviderError
      */
     public function getTrackingRequest($trackingId, $country = null, $language = null): mixed
     {
@@ -71,28 +75,28 @@ class ParcelsAppProvider
                 'apiKey' => $this->apiKey
             ];
             return $this->sendRequest($requestData, null, false);
+        } elseif (isset($trackingRequest['error'])) {
+            throw new ParcelsAppProviderError($trackingRequest['error'], $trackingRequest['description'] ?? null);
         } else {
             return $trackingRequest;
         }
     }
 
-    public static function getTracking($apiKey, $trackingId, $country = null, $language = null): mixed
-    {
-        $trackingRequest = new self($apiKey, $language, $country);
-        return $trackingRequest->getTrackingRequest($trackingId);
-    }
-
     /**
      * @param $trackingId
      * @param $country
+     * @param $language
      * @return mixed
+     * @throws ParcelsAppProviderError
      */
     public function createTracking($trackingId, $country = null, $language = null): mixed
     {
         $requestData = [
             'shipments' => [
-                'trackingId' => $trackingId,
-                'destinationCountry' => $country ?? $this->country
+                [
+                    'trackingId' => $trackingId,
+                    'destinationCountry' => $country ?? $this->country
+                ]
             ],
             'language' => $language ?? $this->language,
             'apiKey' => $this->apiKey
@@ -106,11 +110,12 @@ class ParcelsAppProvider
      * @param $url
      * @param $isPost
      * @return mixed
+     * @throws ParcelsAppProviderError
      */
     protected function sendRequest($data = null, $url = null , $isPost = true)
     {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->getApiUrl() . '/' . $url ?? self::URL_SHIPMENTS_TRACKING);
+        curl_setopt($ch, CURLOPT_URL, $this->getApiUrl() . '/' . ($url ?? self::URL_SHIPMENTS_TRACKING));
         curl_setopt($ch, CURLOPT_POST, $isPost);
         if ($data) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -118,8 +123,27 @@ class ParcelsAppProvider
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
+        $headers = curl_getinfo($ch);
         curl_close($ch);
 
+        if ($headers['http_code'] !== 200) {
+            throw new ParcelsAppProviderError($response, null, $headers['http_code']);
+        }
+
         return json_decode($response, true);
+    }
+
+    /**
+     * @param $apiKey
+     * @param $trackingId
+     * @param $country
+     * @param $language
+     * @return mixed
+     * @throws ParcelsAppProviderError
+     */
+    public static function getTracking($apiKey, $trackingId, $country = null, $language = null): mixed
+    {
+        $trackingRequest = new self($apiKey, $language, $country);
+        return $trackingRequest->getTrackingRequest($trackingId);
     }
 }
