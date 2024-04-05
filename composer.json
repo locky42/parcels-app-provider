@@ -1,0 +1,17 @@
+{
+    "name": "locky42/parcels-app-provider",
+    "description": "ParcelsApp PHP Provider",
+    "keywords": ["extension"],
+    "license": "GPL-3.0",
+    "authors": [
+        {
+            "name": "Maksym Zinchenko",
+            "email": "zinchenko.m.42@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "locky42\\ParcelsAppProvider\\": "src"
+        }
+    }
+}
