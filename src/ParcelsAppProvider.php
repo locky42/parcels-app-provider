@@ -115,12 +115,20 @@ class ParcelsAppProvider
     protected function sendRequest($data = null, $url = null , $isPost = true)
     {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->getApiUrl() . '/' . ($url ?? self::URL_SHIPMENTS_TRACKING));
-        curl_setopt($ch, CURLOPT_POST, $isPost);
+
+        $url = $this->getApiUrl() . '/' . ($url ?? self::URL_SHIPMENTS_TRACKING);
+        if ($isPost) {
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        } else {
+            $url .= '?' . http_build_query($data);
+            $data = null;
+        }
+
+        curl_setopt($ch, CURLOPT_URL, $url);
         if ($data) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         }
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
         $headers = curl_getinfo($ch);
@@ -143,7 +151,7 @@ class ParcelsAppProvider
      */
     public static function getTracking($apiKey, $trackingId, $country = null, $language = null): mixed
     {
-        $trackingRequest = new self($apiKey, $language, $country);
+        $trackingRequest = new self($apiKey, $country, $language);
         return $trackingRequest->getTrackingRequest($trackingId);
     }
 }
