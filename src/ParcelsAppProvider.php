@@ -14,13 +14,14 @@ class ParcelsAppProvider
 
     public string $language = 'en';
     public string $country = 'United States';
+    public string|int|null $zipCode = null;
 
     /**
      * @param string $apiKey
      * @param $country
      * @param $language
      */
-    public function __construct(string $apiKey, $country = null, $language = null)
+    public function __construct(string $apiKey, $country = null, $zipCode = null, $language = null)
     {
         $this->apiKey = $apiKey;
 
@@ -29,6 +30,9 @@ class ParcelsAppProvider
 
         if ($country)
             $this->country = $country;
+
+        if ($zipCode)
+            $this->zipCode = $zipCode;
     }
 
     /**
@@ -45,6 +49,11 @@ class ParcelsAppProvider
         $this->country = $country;
     }
 
+    public function setZipCode(string|int $zipCode)
+    {
+        $this->zipCode = $zipCode;
+    }
+
     /**
      * @return string
      */
@@ -56,14 +65,17 @@ class ParcelsAppProvider
     /**
      * @param $trackingId
      * @param $country
+     * @param $zipCode
      * @param $language
      * @return mixed
      * @throws ParcelsAppProviderError
      */
-    public function getTrackingRequest($trackingId, $country = null, $language = null): mixed
+    public function getTrackingRequest($trackingId, $country = null, $zipCode = null, $language = null): mixed
     {
         if ($country)
             $this->country = $country;
+        if ($zipCode)
+            $this->zipCode = $zipCode;
         if ($language)
             $this->language = $language;
 
@@ -85,11 +97,12 @@ class ParcelsAppProvider
     /**
      * @param $trackingId
      * @param $country
+     * @param $zipCode
      * @param $language
      * @return mixed
      * @throws ParcelsAppProviderError
      */
-    public function createTracking($trackingId, $country = null, $language = null): mixed
+    public function createTracking($trackingId, $country = null, $zipCode = null, $language = null): mixed
     {
         $requestData = [
             'shipments' => [
@@ -101,6 +114,10 @@ class ParcelsAppProvider
             'language' => $language ?? $this->language,
             'apiKey' => $this->apiKey
         ];
+
+        $zipCode = $zipCode ?? $this->zipCode;
+        if ($zipCode)
+            $requestData['zipCode'] = $zipCode;
 
         return $this->sendRequest($requestData);
     }
@@ -145,13 +162,14 @@ class ParcelsAppProvider
      * @param $apiKey
      * @param $trackingId
      * @param $country
+     * @param $zipCode
      * @param $language
      * @return mixed
      * @throws ParcelsAppProviderError
      */
-    public static function getTracking($apiKey, $trackingId, $country = null, $language = null): mixed
+    public static function getTracking($apiKey, $trackingId, $country = null, $zipCode = null, $language = null): mixed
     {
-        $trackingRequest = new self($apiKey, $country, $language);
+        $trackingRequest = new self($apiKey, $country, $zipCode, $language);
         return $trackingRequest->getTrackingRequest($trackingId);
     }
 }
