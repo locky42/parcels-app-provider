@@ -104,20 +104,22 @@ class ParcelsAppProvider
      */
     public function createTracking($trackingId, $country = null, $zipCode = null, $language = null): mixed
     {
-        $requestData = [
-            'shipments' => [
-                [
-                    'trackingId' => $trackingId,
-                    'destinationCountry' => $country ?? $this->country
-                ]
-            ],
-            'language' => $language ?? $this->language,
-            'apiKey' => $this->apiKey
+        $shipment = [
+            'trackingId' => $trackingId,
+            'destinationCountry' => $country ?? $this->country
         ];
 
         $zipCode = $zipCode ?? $this->zipCode;
         if ($zipCode)
-            $requestData['zipCode'] = $zipCode;
+            $shipment['zipCode'] = $zipCode;
+
+        $requestData = [
+            'shipments' => [
+                $shipment
+            ],
+            'language' => $language ?? $this->language,
+            'apiKey' => $this->apiKey
+        ];
 
         return $this->sendRequest($requestData);
     }
