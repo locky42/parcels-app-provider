@@ -111,7 +111,7 @@ class ParcelsAppProvider
 
         $zipCode = $zipCode ?? $this->zipCode;
         if ($zipCode)
-            $shipment['zipCode'] = $zipCode;
+            $shipment['zipcode'] = $zipCode;
 
         $requestData = [
             'shipments' => [
